@@ -1,0 +1,30 @@
+{
+    "manifest_version": 3,
+    "name": "Kazakh Transliterator",
+    "version": "1.0",
+    "description": "A Google Chrome extension to transliterate Cyrillic Kazakh to Latin.",
+    "permissions": [ "activeTab", "tabs", "storage"],
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_start"
+      }
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_icon": {
+        "16": "icon_off.png",
+        "32": "icon_off.png"
+      },
+      "default_title": "Transliterator",
+      "default_popup": ""
+    },
+    "icons": {
+      "16": "icon_off.png",
+      "32": "icon_off.png"
+    }
+  }
+  
