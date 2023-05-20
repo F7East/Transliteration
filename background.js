@@ -1,8 +1,8 @@
-// chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-//   if (message && message.message) {
-//     console.log(message.message);
-//   }
-// });
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message && message.message) {
+    console.log(message.message);
+  }
+});
 
 // Function to handle button click
 function handleButtonClick(tab) {
@@ -40,11 +40,12 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         if (buttonState === 'on') {
           // Send a message to the content script
           chrome.tabs.sendMessage(tab.id, { message: 'Page reloaded', state: buttonState }, function(response) {
+            console.log('Page reloaded');
             if (chrome.runtime.lastError) {
               console.error(chrome.runtime.lastError.message);
               return;
             }
-            console.log('Message sent to content script:', response);
+            // console.log('Message sent to content script:', response);
           });
         }
       });

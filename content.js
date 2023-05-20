@@ -1,22 +1,23 @@
 let originalTextContent = {}; // Variable to store the original content
-var buttonState = 'off'
 
 // Receive messages from the background script
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message && message.message === 'Button state changed') {
-    buttonState = message.state;
+    var buttonState = message.state;
     if (buttonState === 'on') {
-      chrome.runtime.sendMessage({ message: 'Button activated' });
       changeTextContent();
-    } else if (buttonState === 'off') {
-      chrome.runtime.sendMessage({ message: 'Button desactivated' });
+    } 
+    else if (buttonState === 'off') {
       resetTextContent();
     }
-  } else if (message && message.message === 'Page reloaded') {
+  } 
+  else if (message && message.message === 'Page reloaded') {
+    var observer = new MutationObserver(function(mutations) {
       changeTextContent();
+    });
+    observer.observe(document, { childList: true, subtree: true });
   }
-
-    // Send a response back to the sender
+  
     sendResponse({ success: true });
 });
 
@@ -60,55 +61,15 @@ function changeTextContent() {
 
 //scrolling
 function handleScroll(){
+  chrome.storage.local.get('buttonState', function(data) {
+  var buttonState = data.buttonState;
   if (buttonState === 'on'){
     chrome.runtime.sendMessage({ message: 'Scrolling detected'})
     changeTextContent();
   }
+  });
 }
 window.addEventListener('scroll', handleScroll);
-
-
-// MutationObserver for text changing on page 
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.addedNodes.length > 0) {
-      chrome.runtime.sendMessage({ message: 'Mutation registered'})
-      handleAddedNodes(mutation.addedNodes);
-    }
-  });
-});
-
-const observerOptions = {
-  subtree: true,
-  childList: true,
-};
-
-observer.observe(document.body, observerOptions);
-
-
-function handleAddedNodes(addedNodes) {
-  for (let i = 0; i < addedNodes.length; i++) {
-    const addedNode = addedNodes[i];
-    // Check if the node is a text node
-    if (addedNode.nodeType === Node.TEXT_NODE) {
-      const originalText = addedNode.textContent;
-      const newText = transliterateKazakh(originalText);
-      // chrome.runtime.sendMessage({ message: 'originalText', value: originalText });
-      // chrome.runtime.sendMessage({ message: 'newText', value: newText });
-      
-      if (originalText !== newText) {
-        chrome.runtime.sendMessage({ message: 'textNode mutated' });
-        const key = `addedTextNode_${i}`;
-        originalTextContent[key] = {
-          node: addedNode,
-          text: originalText,
-        };
-        addedNode.textContent = newText;
-      }
-    }
-  }
-}
-
   
 const cyrillicToLatin = {
   'Һ': 'h', 'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ж': 'j', 'з': 'z',
