@@ -1,6 +1,7 @@
 // Store the initial state of the button
 var initialButtonState = 'off';
-var originalTextContent; // Variable to store the original content
+let originalTextContent = {}; // Variable to store the original content
+
 
 // Receive messages from the background script
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
@@ -38,28 +39,30 @@ chrome.runtime.sendMessage({ message: 'Content script loaded' });
 // Function to reset the text content to the original state
 function resetTextContent() {
   if (originalTextContent) {
+    chrome.runtime.sendMessage({ message: 'resetTextContent function called'});
     // Restore the original content
-    var currentTextContent = document.body.textContent;
-    var modifiedContent = currentTextContent.replace(originalTextContent, '');
-    document.body.textContent = modifiedContent;
+    // var currentTextContent = document.body.textContent;
+    // var modifiedContent = currentTextContent.replace(originalTextContent, '');
+    // document.body.textContent = modifiedContent;
   }
 }
 
 
 function changeTextContent() {
-  // Get all text nodes in the document
   const textNodes = document.evaluate("//text()", document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
-  
+
   for (let i = 0; i < textNodes.snapshotLength; i++) {
     const textNode = textNodes.snapshotItem(i);
     const originalText = textNode.textContent;
     const newText = transliterateKazakh(originalText);
-    
+
     if (originalText !== newText) {
+      originalTextContent[textNode] = originalText;
       textNode.textContent = newText;
     }
   }
 }
+
   
 const cyrillicToLatin = {
   'Һ': 'h', 'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ж': 'j', 'з': 'z',
