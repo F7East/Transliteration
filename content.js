@@ -12,8 +12,13 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     }
   } 
   else if (message && message.message === 'Page reloaded') {
-    var observer = new MutationObserver(function(mutations) {
-      changeTextContent();
+    var observer = new MutationObserver(function(mutations) {  
+      chrome.storage.local.get('buttonState', function(data) {
+        var buttonState = data.buttonState;
+        if (buttonState === 'on'){
+          changeTextContent();
+        }
+        });
     });
     observer.observe(document, { childList: true, subtree: true });
   }
