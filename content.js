@@ -83,7 +83,9 @@ Object.keys(cyrillicToLatin).forEach(function (key) {
   cyrillicToLatin[key.charAt(0).toUpperCase() + key.slice(1)] = cyrillicToLatin[key].charAt(0).toUpperCase() + cyrillicToLatin[key].slice(1);
 });
 
+
 const vowels = 'аәеёиоөуүұыэюя';
+const consonants = 'бвгғджзйкқлмнңпрстфхһцчшщ';
 
 function transliterateKazakh(text) {
     let previousLetter = null;
@@ -96,7 +98,12 @@ function transliterateKazakh(text) {
       if (cyrillicToLatin.hasOwnProperty(character)) {
         if (isFitToSplitDiphthong(character, previousLetter)) {
           result = splitDiphthong(character);
-        } else {
+        } 
+
+        else if (isFitToSoftenDiphthong(character, previousLetter)) {
+          result = softenDiphthong(character);
+        }
+        else {
           result = cyrillicToLatin[character];
         }
       }
@@ -118,7 +125,25 @@ function isFitToSplitDiphthong(currentLetter, previousLetter) {
     if (previousLetter.toLowerCase() === 'и') {
       return false;
     }
-    return (vowels + 'ьъ ').includes(previousLetter.toLowerCase());
+    return (vowels + 'ьъ \n').includes(previousLetter.toLowerCase());
+}
+
+function isFitToSoftenDiphthong(currentLetter, previousLetter) {
+  if (!isDiphthong(currentLetter)) {
+    return false;
+  }
+  if (isFitToSplitDiphthong(currentLetter, previousLetter)) {
+    return false;
+  }
+  if (consonants.includes(previousLetter.toLowerCase())) {
+    return true;
+  }
+  return false;
+}
+
+function softenDiphthong(character) {
+  const soft = {'е': 'e','ё': 'ö', 'ю': 'ü','я': 'ä'};
+  return soft[character];
 }
   
 function isDiphthong(letter) {
