@@ -36,17 +36,18 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 // Notify the background script that the content script has been loaded
 chrome.runtime.sendMessage({ message: 'Content script loaded' });
 
-// Function to reset the text content to the original state
-function resetTextContent() {
-  if (originalTextContent) {
-    chrome.runtime.sendMessage({ message: 'resetTextContent function called'});
-    // Restore the original content
-    // var currentTextContent = document.body.textContent;
-    // var modifiedContent = currentTextContent.replace(originalTextContent, '');
-    // document.body.textContent = modifiedContent;
-  }
-}
 
+function resetTextContent() {
+  for (const key in originalTextContent) {
+    const textNode = originalTextContent[key].node;
+    const originalText = originalTextContent[key].text;
+    chrome.runtime.sendMessage({ message: 'textNode reverted' });
+    textNode.textContent = originalText;
+  }
+
+
+  originalTextContent = {};
+}
 
 function changeTextContent() {
   const textNodes = document.evaluate("//text()", document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null);
@@ -57,8 +58,13 @@ function changeTextContent() {
     const newText = transliterateKazakh(originalText);
 
     if (originalText !== newText) {
-      originalTextContent[textNode] = originalText;
+      const key = `textNode_${i}`;
+      originalTextContent[key] = {
+        node: textNode,
+        text: originalText
+      };
       textNode.textContent = newText;
+      chrome.runtime.sendMessage({ message: 'textNode saved' });
     }
   }
 }
