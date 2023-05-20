@@ -7,18 +7,20 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message && message.message === 'Button state changed') {
     var buttonState = message.state;
     if (buttonState === 'on') {
-      chrome.runtime.sendMessage({ message: 'Button activated, script executed' });
+      chrome.runtime.sendMessage({ message: 'Button activated' });
       changeTextContent();
     } else if (buttonState === 'off') {
+      chrome.runtime.sendMessage({ message: 'Button desactivated' });
       resetTextContent();
     }
   } else if (message && message.message === 'Page reloaded') {
     chrome.storage.local.get('buttonState', function(data) {
       var buttonState = data.buttonState;
       if (buttonState === 'on') {
-        chrome.runtime.sendMessage({ message: 'Button activated, script executed' });
+        chrome.runtime.sendMessage({ message: 'Button activated' });
         changeTextContent();
       } else if (buttonState === 'off') {
+        chrome.runtime.sendMessage({ message: 'Button desactivated' });
         resetTextContent();
       }
     });
