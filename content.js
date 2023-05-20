@@ -1,12 +1,10 @@
-// Store the initial state of the button
-var initialButtonState = 'off';
 let originalTextContent = {}; // Variable to store the original content
-
+var buttonState = 'off'
 
 // Receive messages from the background script
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message && message.message === 'Button state changed') {
-    var buttonState = message.state;
+    buttonState = message.state;
     if (buttonState === 'on') {
       chrome.runtime.sendMessage({ message: 'Button activated' });
       changeTextContent();
@@ -15,20 +13,11 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       resetTextContent();
     }
   } else if (message && message.message === 'Page reloaded') {
-    chrome.storage.local.get('buttonState', function(data) {
-      var buttonState = data.buttonState;
-      if (buttonState === 'on') {
-        chrome.runtime.sendMessage({ message: 'Button activated' });
-        changeTextContent();
-      } else if (buttonState === 'off') {
-        chrome.runtime.sendMessage({ message: 'Button desactivated' });
-        resetTextContent();
-      }
-    });
+      changeTextContent();
   }
 
-  // Send a response back to the sender
-  sendResponse({ success: true });
+    // Send a response back to the sender
+    sendResponse({ success: true });
 });
 
 
@@ -65,6 +54,57 @@ function changeTextContent() {
       };
       textNode.textContent = newText;
       chrome.runtime.sendMessage({ message: 'textNode saved' });
+    }
+  }
+}
+
+//scrolling
+function handleScroll(){
+  if (buttonState === 'on'){
+    chrome.runtime.sendMessage({ message: 'Scrolling detected'})
+    changeTextContent();
+  }
+}
+window.addEventListener('scroll', handleScroll);
+
+
+// MutationObserver for text changing on page 
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.addedNodes.length > 0) {
+      chrome.runtime.sendMessage({ message: 'Mutation registered'})
+      handleAddedNodes(mutation.addedNodes);
+    }
+  });
+});
+
+const observerOptions = {
+  subtree: true,
+  childList: true,
+};
+
+observer.observe(document.body, observerOptions);
+
+
+function handleAddedNodes(addedNodes) {
+  for (let i = 0; i < addedNodes.length; i++) {
+    const addedNode = addedNodes[i];
+    // Check if the node is a text node
+    if (addedNode.nodeType === Node.TEXT_NODE) {
+      const originalText = addedNode.textContent;
+      const newText = transliterateKazakh(originalText);
+      // chrome.runtime.sendMessage({ message: 'originalText', value: originalText });
+      // chrome.runtime.sendMessage({ message: 'newText', value: newText });
+      
+      if (originalText !== newText) {
+        chrome.runtime.sendMessage({ message: 'textNode mutated' });
+        const key = `addedTextNode_${i}`;
+        originalTextContent[key] = {
+          node: addedNode,
+          text: originalText,
+        };
+        addedNode.textContent = newText;
+      }
     }
   }
 }

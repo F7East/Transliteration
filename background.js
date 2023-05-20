@@ -1,22 +1,8 @@
-// Receive messages from content scripts
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-  if (message && message.message === 'Content script loaded') {
-    console.log('Content script loaded');
-  }
-  if (message && message.message === 'Button activated'){
-    console.log('Button activated');
-  }
-  if (message && message.message === 'Button desactivated'){
-    console.log('Button desactivated');
-  }
-  if (message && message.message === 'textNode reverted'){
-    console.log('textNode reverted');
-  }
-  if (message && message.message === 'textNode saved'){
-    console.log('textNode saved');
-  }
-  
-});
+// chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+//   if (message && message.message) {
+//     console.log(message.message);
+//   }
+// });
 
 // Function to handle button click
 function handleButtonClick(tab) {
